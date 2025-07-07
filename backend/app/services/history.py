@@ -8,9 +8,9 @@ class ChatHistoryService:
     def __init__(self, db: Session):
         self.db = db
     
-    def create_session(self, title: str) -> ChatSession:
+    def create_session(self, title: str, user_id: Optional[int] = None) -> ChatSession:
         """Crear una nueva sesión de chat"""
-        session = ChatSession(title=title)
+        session = ChatSession(title=title, user_id=user_id)
         self.db.add(session)
         self.db.commit()
         self.db.refresh(session)
@@ -20,9 +20,12 @@ class ChatHistoryService:
         """Obtener una sesión específica con todos sus mensajes"""
         return self.db.query(ChatSession).filter(ChatSession.id == session_id).first()
     
-    def get_all_sessions(self) -> List[ChatSession]:
+    def get_all_sessions(self, user_id: Optional[int] = None) -> List[ChatSession]:
         """Obtener todas las sesiones ordenadas por fecha de actualización"""
-        return self.db.query(ChatSession).order_by(ChatSession.updated_at.desc()).all()
+        query = self.db.query(ChatSession)
+        if user_id is not None:
+            query = query.filter(ChatSession.user_id == user_id)
+        return query.order_by(ChatSession.updated_at.desc()).all()
     
     def add_message(self, session_id: int, role: str, content: str) -> ChatMessage:
         """Agregar un mensaje a una sesión"""
@@ -74,3 +77,42 @@ class ChatHistoryService:
         if len(first_message) > 50:
             title += "..."
         return title
+    
+    # Métodos específicos de usuario
+    def get_user_sessions(self, user_id: int) -> List[ChatSession]:
+        """Obtener todas las sesiones de un usuario específico"""
+        return self.db.query(ChatSession).filter(
+            ChatSession.user_id == user_id
+        ).order_by(ChatSession.updated_at.desc()).all()
+    
+    def get_user_session(self, user_id: int, session_id: int) -> Optional[ChatSession]:
+        """Obtener una sesión específica que pertenece al usuario"""
+        return self.db.query(ChatSession).filter(
+            ChatSession.id == session_id,
+            ChatSession.user_id == user_id
+        ).first()
+    
+    def delete_user_session(self, user_id: int, session_id: int) -> bool:
+        """Eliminar una sesión que pertenece al usuario"""
+        session = self.db.query(ChatSession).filter(
+            ChatSession.id == session_id,
+            ChatSession.user_id == user_id
+        ).first()
+        if session:
+            self.db.delete(session)
+            self.db.commit()
+            return True
+        return False
+    
+    def update_user_session_title(self, user_id: int, session_id: int, new_title: str) -> bool:
+        """Actualizar el título de una sesión que pertenece al usuario"""
+        session = self.db.query(ChatSession).filter(
+            ChatSession.id == session_id,
+            ChatSession.user_id == user_id
+        ).first()
+        if session:
+            session.title = new_title
+            session.updated_at = datetime.utcnow()
+            self.db.commit()
+            return True
+        return False

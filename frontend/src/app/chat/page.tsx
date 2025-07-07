@@ -1,5 +1,7 @@
 "use client";
 import { ChatMessageBubble } from "@/components/ChatMessageBubble";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/contexts/AuthContext";
 import { useChatWithHistory } from "@/lib/useChatWithHistory";
 import {
   Edit3,
@@ -15,9 +17,12 @@ import {
   User,
   X,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-export default function ChatPage() {
+function ChatPageContent() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const {
     messages,
     sendMessage,
@@ -178,7 +183,7 @@ export default function ChatPage() {
               <div className="flex items-center gap-2">
                 <User className="w-5 h-5 text-gray-500" />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Usuario
+                  {user?.username || "Usuario"}
                 </span>
               </div>
               <button
@@ -193,11 +198,17 @@ export default function ChatPage() {
               </button>
             </div>
             <div className="flex items-center gap-2">
-              <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+              <button
+                onClick={() => router.push("/settings")}
+                className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
                 <Settings className="w-4 h-4" />
                 Configuración
               </button>
-              <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+              <button
+                onClick={logout}
+                className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
                 <LogOut className="w-4 h-4" />
                 Salir
               </button>
@@ -290,5 +301,13 @@ export default function ChatPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <ProtectedRoute>
+      <ChatPageContent />
+    </ProtectedRoute>
   );
 }

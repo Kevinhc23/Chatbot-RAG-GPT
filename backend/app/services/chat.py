@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from app.models.chat import ChatAnswer
 from app.repositories.base import IChunkRepository
 from app.services.embedding import EmbeddingService
@@ -30,8 +30,12 @@ class ChatService:
         scored.sort(key=lambda x: x[0])
         return [c for _, c in scored[:k]]
 
-    def answer(self, question: str, conversation_history: List[dict] = None) -> ChatAnswer:
-        chunks = self._retrieve(question)
+    def answer(self, question: str, conversation_history: List[dict] = None, user_settings: Optional[dict] = None) -> ChatAnswer:
+        # Usar configuración del usuario si está disponible
+        top_k = user_settings.get("top_k", 3) if user_settings else 3
+        system_prompt = user_settings.get("system_prompt", "Eres un asistente experto") if user_settings else "Eres un asistente experto"
+        
+        chunks = self._retrieve(question, top_k)
         context = "\n\n".join(c.texto for c in chunks)
 
         # Construir el contexto de conversación
@@ -46,7 +50,7 @@ class ChatService:
             conversation_context = f"\n\nContexto de la conversación:\n{conversation_context}\n"
 
         prompt = (
-            "Eres un asistente experto y sólo debes usar el siguiente contexto para contestar.\n\n"
+            f"{system_prompt}\n\n"
             f"Contexto de la base de conocimiento:\n{context}\n\n"
             f"{conversation_context}"
             f"Pregunta actual del usuario: {question}\n\n"
@@ -56,7 +60,12 @@ class ChatService:
             "- Si no sabes la respuesta basándote en el contexto proporcionado, indícalo claramente\n"
             "- Mantén la coherencia con las respuestas anteriores en la conversación"
         )
-        raw_answer = self._llm.ask(prompt)
+        
+        # Pasar configuración del usuario al LLM si está disponible
+        if user_settings:
+            raw_answer = self._llm.ask(prompt, user_settings)
+        else:
+            raw_answer = self._llm.ask(prompt)
 
         images: List[str] = []
         videos: List[str] = []

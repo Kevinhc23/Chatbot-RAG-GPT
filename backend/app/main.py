@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.chat import router as chat_router
 from app.api.v1.chat_history import router as chat_history_router
 from app.api.v1.history import router as history_router
+from app.api.v1.auth import router as auth_router
+from app.api.v1.settings import router as settings_router
 from app.database import create_tables
 
 def create_app() -> FastAPI:
@@ -28,6 +30,8 @@ def create_app() -> FastAPI:
     app.include_router(chat_router)
     app.include_router(chat_history_router)
     app.include_router(history_router)
+    app.include_router(auth_router)
+    app.include_router(settings_router)
     
     return app
 

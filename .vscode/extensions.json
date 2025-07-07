@@ -1,0 +1,41 @@
+{
+  "recommendations": [
+    // Python
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.debugpy",
+    "ms-python.black-formatter",
+    "ms-python.flake8",
+    "ms-python.mypy-type-checker",
+
+    // JavaScript/TypeScript
+    "ms-vscode.vscode-typescript-next",
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-eslint",
+
+    // React/Next.js
+    "ms-vscode.vscode-react-refactor",
+    "burkeholland.simple-react-snippets",
+
+    // General
+    "ms-vscode.vscode-json",
+    "ms-vscode-remote.remote-containers",
+    "ms-vscode.vscode-docker",
+    "ms-vscode.vscode-thunder-client",
+
+    // Git
+    "eamodio.gitlens",
+    "github.vscode-pull-request-github",
+
+    // Database
+    "mongodb.mongodb-vscode",
+
+    // Utilities
+    "ms-vscode.vscode-todo-highlight",
+    "gruntfuggly.todo-tree",
+    "streetsidesoftware.code-spell-checker",
+    "ms-vscode.vscode-icons",
+    "pkief.material-icon-theme"
+  ]
+}

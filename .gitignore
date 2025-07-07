@@ -239,12 +239,12 @@ $RECYCLE.BIN/
 # EDITORS & IDEs
 # =============================================================================
 
-# VSCode
-.vscode/
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+# # VSCode
+# .vscode/
+# !.vscode/settings.json
+# !.vscode/tasks.json
+# !.vscode/launch.json
+# !.vscode/extensions.json
 *.code-workspace
 
 # PyCharm

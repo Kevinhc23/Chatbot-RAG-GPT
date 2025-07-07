@@ -1,0 +1,82 @@
+{
+  "python.defaultInterpreterPath": "./backend/venv/Scripts/python.exe",
+  "python.terminal.activateEnvironment": true,
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": true,
+  "python.linting.mypyEnabled": true,
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": ["--line-length", "88"],
+  "python.sortImports.args": [
+    "--multi-line=3",
+    "--trailing-comma",
+    "--force-grid-wrap=0",
+    "--combine-as",
+    "--line-width",
+    "88"
+  ],
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["backend/tests"],
+  "python.testing.cwd": "${workspaceFolder}/backend",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/*.egg-info": true,
+    "**/.pytest_cache": true,
+    "**/.coverage": true,
+    "**/.venv": true,
+    "**/venv": true,
+    "**/.env": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/venv": true,
+    "**/.venv": true
+  },
+  "emmet.includeLanguages": {
+    "typescript": "html",
+    "typescriptreact": "html"
+  },
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.suggest.autoImports": true,
+  "javascript.suggest.autoImports": true,
+  "tailwindCSS.includeLanguages": {
+    "typescript": "html",
+    "typescriptreact": "html"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    "class:\\s*['\"]([^'\"]*)['\"]",
+    "className:\\s*['\"]([^'\"]*)['\"]"
+  ],
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "css.validate": false,
+  "less.validate": false,
+  "scss.validate": false,
+  "terminal.integrated.env.windows": {
+    "PYTHONPATH": "${workspaceFolder}/backend"
+  },
+  "debug.console.fontSize": 14,
+  "debug.console.lineHeight": 22,
+  "workbench.colorCustomizations": {
+    "debugConsole.infoForeground": "#00bcd4",
+    "debugConsole.warningForeground": "#ff9800",
+    "debugConsole.errorForeground": "#f44336"
+  }
+}

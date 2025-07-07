@@ -17,10 +17,8 @@ async def get_user_settings(
     settings = user_service.get_user_settings(current_user.id)
     
     if not settings:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Configuración no encontrada"
-        )
+        # Crear configuración por defecto si no existe
+        settings = user_service.create_default_settings(current_user.id)
     
     return settings
 
@@ -32,12 +30,20 @@ async def update_user_settings(
 ):
     """Actualizar configuración del usuario"""
     user_service = UserService(db)
+    
+    # Obtener configuración existente o crear una nueva
+    settings = user_service.get_user_settings(current_user.id)
+    if not settings:
+        # Crear configuración por defecto si no existe
+        settings = user_service.create_default_settings(current_user.id)
+    
+    # Actualizar configuración
     updated_settings = user_service.update_user_settings(current_user.id, settings_update)
     
     if not updated_settings:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Configuración no encontrada"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al actualizar configuración"
         )
     
     return updated_settings

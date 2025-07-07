@@ -59,7 +59,7 @@ export default function SettingsPage() {
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
-        }/user-settings`,
+        }/settings`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -117,7 +117,7 @@ export default function SettingsPage() {
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
-        }/user-settings`,
+        }/settings`,
         {
           method: "PUT",
           headers: {

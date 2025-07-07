@@ -42,11 +42,20 @@ async def chat_with_history_endpoint(
     else:
         session_id = payload.session_id
     
+    # Obtener el historial de conversación para contexto
+    conversation_history = []
+    if payload.session_id is not None:
+        messages = history_service.get_session_messages(session_id)
+        conversation_history = [
+            {"role": msg.role, "content": msg.content}
+            for msg in messages
+        ]
+    
     # Guardar el mensaje del usuario
     history_service.add_message(session_id, "user", payload.question)
     
-    # Generar respuesta
-    answer = service.answer(payload.question)
+    # Generar respuesta con contexto de conversación
+    answer = service.answer(payload.question, conversation_history)
     
     # Guardar la respuesta del asistente
     history_service.add_message(session_id, "assistant", answer.answer)

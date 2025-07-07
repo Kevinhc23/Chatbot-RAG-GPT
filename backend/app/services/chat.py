@@ -101,24 +101,31 @@ class ChatService:
         # 2. Si no es consulta visual pero hay chunks con multimedia: incluir al menos una imagen/video representativo
         # 3. Si no hay texto relevante en chunks: incluir multimedia como alternativa
         
-        chunks_with_media = [c for c in chunks if c.imagenes or c.videos]
+        # Filtrar solo chunks que realmente tienen multimedia (arrays no vacíos)
+        chunks_with_media = [c for c in chunks if (c.imagenes and len(c.imagenes) > 0) or (c.videos and len(c.videos) > 0)]
         
         if is_visual_query:
-            # Consulta visual explícita: incluir todo el multimedia
+            # Consulta visual explícita: incluir todo el multimedia de TODOS los chunks
             for c in chunks:
-                images.extend(c.imagenes)
-                videos.extend(c.videos)
+                if c.imagenes and len(c.imagenes) > 0:
+                    images.extend(c.imagenes)
+                if c.videos and len(c.videos) > 0:
+                    videos.extend(c.videos)
         elif chunks_with_media:
-            # No es consulta visual pero hay multimedia disponible: incluir al menos uno
+            # No es consulta visual pero hay chunks con multimedia: incluir al menos uno
             # Priorizar chunks con más multimedia o más relevantes (primeros en la lista)
             for c in chunks_with_media[:2]:  # Máximo 2 chunks con multimedia
-                images.extend(c.imagenes)
-                videos.extend(c.videos)
+                if c.imagenes and len(c.imagenes) > 0:
+                    images.extend(c.imagenes)
+                if c.videos and len(c.videos) > 0:
+                    videos.extend(c.videos)
         elif len(chunks) > 0 and all(not c.texto.strip() for c in chunks):
-            # Fallback: si no hay texto, incluir multimedia disponible
+            # Fallback: si no hay texto, incluir multimedia disponible (solo si no está vacío)
             for c in chunks:
-                images.extend(c.imagenes)
-                videos.extend(c.videos)
+                if c.imagenes and len(c.imagenes) > 0:
+                    images.extend(c.imagenes)
+                if c.videos and len(c.videos) > 0:
+                    videos.extend(c.videos)
         
         # Remover duplicados manteniendo el orden
         images = list(dict.fromkeys(images))

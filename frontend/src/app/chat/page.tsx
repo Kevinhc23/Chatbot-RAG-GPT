@@ -1,36 +1,41 @@
 "use client";
-import { useChat } from "@/lib/useChat";
 import { ChatMessageBubble } from "@/components/ChatMessageBubble";
-import { useEffect, useRef, useState } from "react";
+import { useChatWithHistory } from "@/lib/useChatWithHistory";
 import {
+  Edit3,
+  LogOut,
+  Menu,
   MessageSquare,
+  Moon,
   Plus,
   Send,
-  Menu,
-  X,
-  Trash2,
-  Edit3,
   Settings,
-  User,
-  LogOut,
   Sun,
-  Moon,
+  Trash2,
+  User,
+  X,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 export default function ChatPage() {
-  const { messages, sendMessage, isLoading } = useChat();
+  const {
+    messages,
+    sendMessage,
+    isLoading,
+    currentSessionId,
+    sessions,
+    loadingSessions,
+    loadSession,
+    createNewSession,
+    deleteSession,
+    updateSessionTitle,
+  } = useChatWithHistory();
   const [input, setInput] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [editingSessionId, setEditingSessionId] = useState<number | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
-
-  // Simulación de chats anteriores
-  const [chatHistory] = useState([
-    { id: 1, title: "Configuración TailwindCSS", date: "Hoy" },
-    { id: 2, title: "Explicación quantum entanglement", date: "Ayer" },
-    { id: 3, title: "Logo concept for project", date: "Ayer" },
-    { id: 4, title: "Verificación email issue", date: "Hace 2 días" },
-  ]);
 
   useEffect(() => {
     listRef.current?.scrollTo({
@@ -77,7 +82,10 @@ export default function ChatPage() {
 
           {/* Botón nuevo chat */}
           <div className="p-4">
-            <button className="w-full flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <button
+              onClick={createNewSession}
+              className="w-full flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
               <Plus className="w-4 h-4" />
               <span className="text-sm font-medium">Nuevo chat</span>
             </button>
@@ -85,57 +93,83 @@ export default function ChatPage() {
 
           {/* Lista de chats */}
           <div className="flex-1 overflow-y-auto px-4">
-            <div className="space-y-1">
-              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                Hoy
+            {loadingSessions ? (
+              <div className="text-center py-4">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Cargando sesiones...
+                </div>
               </div>
-              {chatHistory
-                .filter((chat) => chat.date === "Hoy")
-                .map((chat) => (
-                  <div
-                    key={chat.id}
-                    className="group flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
-                  >
-                    <MessageSquare className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
-                      {chat.title}
-                    </span>
-                    <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1">
-                      <button className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
-                        <Edit3 className="w-3 h-3" />
-                      </button>
-                      <button className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
-                        <Trash2 className="w-3 h-3" />
-                      </button>
+            ) : (
+              <div className="space-y-1">
+                {sessions.length > 0 ? (
+                  sessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className={`group flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer ${
+                        currentSessionId === session.id
+                          ? "bg-blue-50 dark:bg-blue-900/20"
+                          : ""
+                      }`}
+                      onClick={() => loadSession(session.id)}
+                    >
+                      <MessageSquare className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      {editingSessionId === session.id ? (
+                        <input
+                          type="text"
+                          value={editingTitle}
+                          onChange={(e) => setEditingTitle(e.target.value)}
+                          onBlur={() => {
+                            updateSessionTitle(session.id, editingTitle);
+                            setEditingSessionId(null);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              updateSessionTitle(session.id, editingTitle);
+                              setEditingSessionId(null);
+                            } else if (e.key === "Escape") {
+                              setEditingSessionId(null);
+                            }
+                          }}
+                          className="flex-1 text-sm bg-transparent border-none outline-none text-gray-700 dark:text-gray-300"
+                          autoFocus
+                        />
+                      ) : (
+                        <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
+                          {session.title}
+                        </span>
+                      )}
+                      <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingSessionId(session.id);
+                            setEditingTitle(session.title);
+                          }}
+                          className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteSession(session.id);
+                          }}
+                          className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      No hay sesiones aún
                     </div>
                   </div>
-                ))}
-
-              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-6 mb-2">
-                Ayer
+                )}
               </div>
-              {chatHistory
-                .filter((chat) => chat.date === "Ayer")
-                .map((chat) => (
-                  <div
-                    key={chat.id}
-                    className="group flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
-                  >
-                    <MessageSquare className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
-                      {chat.title}
-                    </span>
-                    <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1">
-                      <button className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
-                        <Edit3 className="w-3 h-3" />
-                      </button>
-                      <button className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-            </div>
+            )}
           </div>
 
           {/* Footer del sidebar */}

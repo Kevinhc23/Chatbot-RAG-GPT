@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 class ChatRequest(BaseModel):
@@ -8,3 +8,4 @@ class ChatAnswer(BaseModel):
     answer: str
     images: List[str] = []
     videos: List[str] = []
+    session_id: Optional[int] = None

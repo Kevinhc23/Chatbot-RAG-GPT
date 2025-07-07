@@ -92,40 +92,38 @@ class ChatService:
         else:
             raw_answer = self._llm.ask(prompt)
 
-        # Incluir imágenes y videos de los chunks recuperados
+        # Incluir imágenes y videos con filtrado ultra-selectivo
         images: List[str] = []
         videos: List[str] = []
         
-        # Estrategia de inclusión de multimedia:
-        # 1. Si es consulta visual explícita: incluir todo el multimedia de los chunks
-        # 2. Si no es consulta visual pero hay chunks con multimedia: incluir al menos una imagen/video representativo
-        # 3. Si no hay texto relevante en chunks: incluir multimedia como alternativa
+        # Nueva estrategia: SER MUY SELECTIVO con las imágenes
+        # Solo incluir multimedia del chunk MÁS relevante, a menos que sea consulta visual explícita
         
-        # Filtrar solo chunks que realmente tienen multimedia (arrays no vacíos)
-        chunks_with_media = [c for c in chunks if (c.imagenes and len(c.imagenes) > 0) or (c.videos and len(c.videos) > 0)]
+        # Encontrar chunks que tienen multimedia
+        chunks_with_media = []
+        for i, chunk in enumerate(chunks):
+            if (chunk.imagenes and len(chunk.imagenes) > 0) or (chunk.videos and len(chunk.videos) > 0):
+                chunks_with_media.append((chunk, i))
         
-        if is_visual_query:
-            # Consulta visual explícita: incluir todo el multimedia de TODOS los chunks
-            for c in chunks:
-                if c.imagenes and len(c.imagenes) > 0:
-                    images.extend(c.imagenes)
-                if c.videos and len(c.videos) > 0:
-                    videos.extend(c.videos)
-        elif chunks_with_media:
-            # No es consulta visual pero hay chunks con multimedia: incluir al menos uno
-            # Priorizar chunks con más multimedia o más relevantes (primeros en la lista)
-            for c in chunks_with_media[:2]:  # Máximo 2 chunks con multimedia
-                if c.imagenes and len(c.imagenes) > 0:
-                    images.extend(c.imagenes)
-                if c.videos and len(c.videos) > 0:
-                    videos.extend(c.videos)
-        elif len(chunks) > 0 and all(not c.texto.strip() for c in chunks):
-            # Fallback: si no hay texto, incluir multimedia disponible (solo si no está vacío)
-            for c in chunks:
-                if c.imagenes and len(c.imagenes) > 0:
-                    images.extend(c.imagenes)
-                if c.videos and len(c.videos) > 0:
-                    videos.extend(c.videos)
+        if not chunks_with_media:
+            # No hay multimedia, no devolver nada
+            pass
+        elif is_visual_query:
+            # Consulta visual explícita: incluir multimedia de máximo los 2 chunks más relevantes
+            for chunk, position in chunks_with_media[:2]:
+                if chunk.imagenes and len(chunk.imagenes) > 0:
+                    images.extend(chunk.imagenes)
+                if chunk.videos and len(chunk.videos) > 0:
+                    videos.extend(chunk.videos)
+        else:
+            # Consulta normal: SER MUY SELECTIVO
+            # Solo incluir multimedia del primer chunk que lo tenga (el más relevante por ranking)
+            first_chunk_with_media = chunks_with_media[0][0]
+            
+            if first_chunk_with_media.imagenes and len(first_chunk_with_media.imagenes) > 0:
+                images.extend(first_chunk_with_media.imagenes)
+            if first_chunk_with_media.videos and len(first_chunk_with_media.videos) > 0:
+                videos.extend(first_chunk_with_media.videos)
         
         # Remover duplicados manteniendo el orden
         images = list(dict.fromkeys(images))

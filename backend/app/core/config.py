@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: SecretStr
     mongo_uri: str = "mongodb://localhost:27017/"
     mongo_db: str = "BaseConocimiento"
-    mongo_collection: str = "viajes_chunks"
+    mongo_collection: str = "Viaje"
     embedding_model_name: str = "text-embedding-3-small"
     llm_model_name: str = "gpt-4o-mini"
     llm_temperature: float = 0.0

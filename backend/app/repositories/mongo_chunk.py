@@ -1,5 +1,6 @@
 from typing import Iterable, Optional
 from pymongo import MongoClient
+from bson import ObjectId
 from app.core.config import get_settings
 from app.models.chunk import Chunk
 from .base import IChunkRepository
@@ -24,7 +25,15 @@ class MongoChunkRepository(IChunkRepository):
             [mongo_db]
             [mongo_collection]
         )
+    
+    def _convert_object_ids(self, doc: dict) -> dict:
+        """Convierte ObjectId a string para compatibilidad con Pydantic."""
+        if "_id" in doc and isinstance(doc["_id"], ObjectId):
+            doc["_id"] = str(doc["_id"])
+        return doc
 
     def get_all(self) -> Iterable[Chunk]:
         for doc in self._collection.find():
+            # Convertir ObjectId a string para compatibilidad con Pydantic
+            doc = self._convert_object_ids(doc)
             yield Chunk(**doc)

@@ -6,4 +6,4 @@ class Chunk(BaseModel):
     texto: str
     imagenes: List[str] = []
     videos: List[str] = []
-    vector: List[float] = Field(default_factory=list, min_items=1536, max_items=1536)
+    vector: List[float] = Field(default_factory=list, min_length=1536, max_length=1536)
